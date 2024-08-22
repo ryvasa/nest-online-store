@@ -6,12 +6,17 @@ import {
   Patch,
   Param,
   Delete,
+  UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { UserInterceptor } from '../common/interceptors/user.interceptor';
+import { RequestWithCredential } from '../common/interfaces/auth.interface';
 
+@UseInterceptors(UserInterceptor)
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
@@ -49,8 +54,12 @@ export class UsersController {
     description: 'The user has been successfully updated.',
   })
   @ApiBody({ type: UpdateUserDto })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update('auth', id, updateUserDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() request: RequestWithCredential,
+  ) {
+    return this.usersService.update(request.user, id, updateUserDto);
   }
 
   @Delete(':id')
@@ -59,7 +68,7 @@ export class UsersController {
     status: 200,
     description: 'The user has been successfully deleted.',
   })
-  remove(@Param('id') id: string) {
-    return this.usersService.remove('auth', id);
+  remove(@Param('id') id: string, @Req() request: RequestWithCredential) {
+    return this.usersService.remove(request.user, id);
   }
 }

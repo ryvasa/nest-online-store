@@ -2,10 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './common/filters/exception-filter';
+import { GlobalInterceptor } from './common/interceptors/global.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
   const config = new DocumentBuilder()
     .setTitle('Online Store API')
     .setDescription('The Online Store API description')
@@ -22,6 +22,8 @@ async function bootstrap() {
   // });
 
   app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(new GlobalInterceptor());
+
   await app.listen(process.env.PORT || 5000);
 }
 bootstrap();

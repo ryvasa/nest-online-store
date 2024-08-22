@@ -10,9 +10,9 @@ import { LoginAuthDto } from './dto/login-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Auth } from './entities/auth.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
-  CurrentUser,
+  GoogleAuthRequest,
   LoginResponse,
 } from 'src/common/interfaces/auth.interface';
 
@@ -21,6 +21,7 @@ export class AuthService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Auth) private authRepository: Repository<Auth>,
+    private dataSource: DataSource,
     private jwtService: JwtService,
   ) {}
 
@@ -45,19 +46,19 @@ export class AuthService {
     return null;
   }
 
-  async generateAccessToken(auth: CurrentUser): Promise<string> {
+  async generateAccessToken(id: string, username: string): Promise<string> {
     const accessToken = await this.jwtService.signAsync(
       {
-        id: auth.id,
-        username: auth.username,
+        id,
+        username,
       },
       { secret: process.env.JWT_SECRET, expiresIn: '1d' },
     );
     return accessToken;
   }
 
-  async login(auth: CurrentUser): Promise<LoginResponse> {
-    const accessToken = await this.generateAccessToken(auth);
+  async login(auth: User): Promise<LoginResponse> {
+    const accessToken = await this.generateAccessToken(auth.id, auth.username);
     const refreshToken = await this.jwtService.signAsync(
       {
         id: auth.id,
@@ -72,7 +73,51 @@ export class AuthService {
     return { ...updatedUser, accessToken };
   }
 
-  async refreshToken(auth: CurrentUser): Promise<object> {
+  async googleAuth(auth: GoogleAuthRequest): Promise<LoginResponse | object> {
+    // Start transaction
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const findUserByProviderId = await this.authRepository
+        .createQueryBuilder('auth')
+        .leftJoinAndSelect('auth.user', 'user')
+        .where('auth.providerId = :providerId', { providerId: auth.providerId })
+        .getOne();
+
+      if (findUserByProviderId) {
+        return this.login(findUserByProviderId.user);
+      }
+      const createUser = this.userRepository.create({
+        username: auth.username,
+        email: auth.email,
+        name: auth.name,
+      });
+      await queryRunner.manager.save(createUser);
+
+      const createAuth = this.authRepository.create({
+        providerId: auth.providerId,
+        provider: auth.provider,
+        user: createUser,
+      });
+      await queryRunner.manager.save(createAuth);
+
+      // Commit if all success
+      await queryRunner.commitTransaction();
+
+      return this.login(createUser);
+    } catch (error) {
+      // Rollback if error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Release queryRunner
+      await queryRunner.release();
+    }
+  }
+
+  async refreshToken(auth: User): Promise<object> {
     const currentUser = await this.me(auth.id);
     const payload = await this.jwtService.verifyAsync(
       currentUser.refreshToken,
@@ -83,7 +128,7 @@ export class AuthService {
     if (!currentUser.refreshToken || payload.id !== auth.id) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-    const accessToken = await this.generateAccessToken(auth);
+    const accessToken = await this.generateAccessToken(auth.id, auth.username);
     return { accessToken };
   }
 
@@ -92,15 +137,18 @@ export class AuthService {
     if (!auth) {
       throw new NotFoundException('User not found');
     }
+    if (!auth.refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
     return auth;
   }
 
-  async logout(id: string): Promise<string> {
+  async logout(id: string): Promise<object> {
     const user = await this.me(id);
     await this.userRepository.save({
       ...user,
       refreshToken: null,
     });
-    return 'User has been logout';
+    return { message: 'User has been logout' };
   }
 }

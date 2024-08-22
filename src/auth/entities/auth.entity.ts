@@ -1,14 +1,27 @@
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Auth {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true, nullable: true })
-  googleId?: string;
+  @Column()
+  provider: string;
 
-  @OneToOne(() => User, (user) => user.auth, { onDelete: 'CASCADE' })
+  @Column()
+  providerId: string;
+
+  @OneToOne(() => User, (user) => user.auth, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  }) // Relasi wajib
+  @JoinColumn()
   user: User;
 }

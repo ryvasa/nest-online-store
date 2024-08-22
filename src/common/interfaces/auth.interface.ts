@@ -1,3 +1,5 @@
+import { User } from '../../users/entities/user.entity';
+
 export interface LoginResponse {
   id: string;
   username: string;
@@ -15,6 +17,17 @@ export interface CurrentUser {
   exp: number;
 }
 
+export interface GoogleAuthRequest {
+  provider: string;
+  providerId: string;
+  email: string;
+  name: string;
+  username: string;
+  picture: string;
+}
+export interface RequestWithGoogleCredential extends Request {
+  user: GoogleAuthRequest;
+}
 export interface RequestWithCredential extends Request {
-  user: CurrentUser;
+  user: User;
 }

@@ -1,13 +1,12 @@
-import { Auth } from 'src/auth/entities/auth.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Auth } from '../../auth/entities/auth.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -20,7 +19,7 @@ export class User {
   @Column({ type: 'varchar', length: 200, unique: true })
   username: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
   @Column({ unique: true, length: 200 })
@@ -35,7 +34,8 @@ export class User {
   @Column({ nullable: true })
   refreshToken: string;
 
-  @OneToOne(() => Auth, (auth) => auth.user)
-  @JoinColumn()
-  auth: Auth;
+  @OneToOne(() => Auth, (auth) => auth.user, {
+    nullable: true,
+  })
+  auth?: Auth;
 }

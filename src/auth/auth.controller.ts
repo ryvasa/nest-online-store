@@ -6,14 +6,21 @@ import {
   Req,
   Get,
   Delete,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginAuthDto } from './dto/login-auth.dto';
-import { LocalAuthGuard } from 'src/common/guards/local.guard';
-import { JWTAuthGuard } from '../common/guards/jwt.guard';
-import { RequestWithCredential } from '../common/interfaces/auth.interface';
+import { LocalAuthGuard } from 'src/common/guards/local-auth.guard';
+import { JWTAuthGuard } from '../common/guards/jwt-auth.guard';
+import {
+  RequestWithCredential,
+  RequestWithGoogleCredential,
+} from '../common/interfaces/auth.interface';
+import { GoogleAuthGuard } from '../common/guards/google-auth.guard';
+import { UserInterceptor } from '../common/interceptors/user.interceptor';
 @ApiTags('auth')
+@UseInterceptors(UserInterceptor)
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -52,7 +59,21 @@ export class AuthController {
   @Delete('logout')
   @ApiResponse({ status: 200, description: 'Logout success.' })
   @ApiOperation({ summary: 'User Logout' })
-  async logout(@Req() request: RequestWithCredential): Promise<string> {
+  async logout(@Req() request: RequestWithCredential): Promise<object> {
     return this.authService.logout(request.user.id);
+  }
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('login/google')
+  @ApiResponse({ status: 200, description: 'Login with google success.' })
+  async google(@Req() request: RequestWithCredential): Promise<any> {
+    return request.user;
+  }
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/redirect')
+  @ApiResponse({ status: 200, description: 'Login with google success.' })
+  async coba(@Req() request: RequestWithGoogleCredential): Promise<any> {
+    return this.authService.googleAuth(request.user);
   }
 }
