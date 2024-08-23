@@ -36,18 +36,6 @@ export class ProductData {
 
   @ApiProperty({ type: String, example: 'material' })
   material?: string;
-
-  @ApiProperty({ type: Number, example: 100 })
-  weight?: number;
-
-  @ApiProperty({ type: Number, example: 100 })
-  length?: number;
-
-  @ApiProperty({ type: Number, example: 100 })
-  width?: number;
-
-  @ApiProperty({ type: Number, example: 100 })
-  height?: number;
 }
 
 export class ProductResponse {

@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 export class CreateProductDto {
   @ApiProperty({
     example: 'Product 1',
@@ -55,15 +49,6 @@ export class CreateProductDto {
   readonly material: string;
 
   @ApiProperty({
-    example: 100,
-    description: 'product weight in gram',
-    type: Number,
-  })
-  @IsOptional()
-  @IsInt()
-  readonly weight: number;
-
-  @ApiProperty({
     example: ['image1.png', 'image2.png'],
     description: 'product image',
     type: Array,
@@ -71,31 +56,4 @@ export class CreateProductDto {
   @IsString({ each: true })
   @IsNotEmpty()
   readonly images: Array<string>;
-
-  @ApiProperty({
-    example: 100,
-    description: 'product length in cm',
-    type: Number,
-  })
-  @IsOptional()
-  @IsInt()
-  readonly length: number;
-
-  @ApiProperty({
-    example: 100,
-    description: 'product width in cm',
-    type: Number,
-  })
-  @IsOptional()
-  @IsInt()
-  readonly width: number;
-
-  @ApiProperty({
-    example: 100,
-    description: 'product height in cm',
-    type: Number,
-  })
-  @IsOptional()
-  @IsInt()
-  readonly height: number;
 }
