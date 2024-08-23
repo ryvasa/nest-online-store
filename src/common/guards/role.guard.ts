@@ -16,10 +16,17 @@ export class RolesGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const customHeader = request.headers['authorization'].split(' ')[1]; // Ganti dengan header yang sesuai
-    const { id } = await this.jwtService.verifyAsync(customHeader, {
-      secret: process.env.JWT_SECRET,
-    });
+    const customHeader = request.headers['authorization'];
+
+    if (!customHeader) {
+      throw new ForbiddenException('You do not have permission');
+    }
+    const { id } = await this.jwtService.verifyAsync(
+      customHeader.split(' ')[1],
+      {
+        secret: process.env.JWT_SECRET,
+      },
+    );
     const user = await this.userService.findOne(id);
     if (user.role === 'admin') {
       return true;

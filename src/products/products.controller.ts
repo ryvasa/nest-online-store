@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -15,6 +17,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -49,13 +52,20 @@ export class ProductsController {
   @Get()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all products' })
+  @ApiQuery({ name: 'productName', required: false, type: String })
+  @ApiQuery({ name: 'take', required: false, type: String })
+  @ApiQuery({ name: 'skip', required: false, type: String })
   @ApiResponse({
     status: 200,
     description: 'Return all products.',
     type: ArrayProductResponse,
   })
-  findAll() {
-    return this.productsService.findAll();
+  findAll(
+    @Query('productName') productName?: string,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+  ) {
+    return this.productsService.findAll({ productName, take, skip });
   }
 
   @Get(':id')

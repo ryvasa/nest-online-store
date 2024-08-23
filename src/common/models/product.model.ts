@@ -11,7 +11,7 @@ export class ProductData {
   description: string;
 
   @ApiProperty({
-    example: '[category1, category2]',
+    example: ['category1', 'category2'],
     type: Array,
   })
   category: Array<string>;
@@ -22,8 +22,32 @@ export class ProductData {
   @ApiProperty({ type: Date, example: '2024-08-22T06:58:54.173Z' })
   updatedDate: Date;
 
+  @ApiProperty({ type: Number, example: 100 })
+  price: number;
+
   @ApiProperty({ type: Number, example: 0 })
   __v: number;
+
+  @ApiProperty({
+    example: ['image1', 'image2'],
+    type: Array<string>,
+  })
+  images: Array<string>;
+
+  @ApiProperty({ type: String, example: 'material' })
+  material?: string;
+
+  @ApiProperty({ type: Number, example: 100 })
+  weight?: number;
+
+  @ApiProperty({ type: Number, example: 100 })
+  length?: number;
+
+  @ApiProperty({ type: Number, example: 100 })
+  width?: number;
+
+  @ApiProperty({ type: Number, example: 100 })
+  height?: number;
 }
 
 export class ProductResponse {
@@ -44,4 +68,10 @@ export class ProductMessage {
 export class ProductMessageResponse {
   @ApiProperty({ type: ProductMessage })
   data: ProductMessage;
+}
+
+export class ProductQuery {
+  productName: string;
+  take: number;
+  skip: number;
 }

@@ -4,6 +4,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product } from './interfaces/product.interface';
+import { ProductQuery } from '../common/models/product.model';
 
 @Injectable()
 export class ProductsService {
@@ -14,8 +15,12 @@ export class ProductsService {
     return product.save();
   }
 
-  findAll(): Promise<Product[]> {
-    return this.productModel.find().exec();
+  async findAll({ productName, take, skip }: ProductQuery): Promise<Product[]> {
+    const query = productName
+      ? { productName: new RegExp(productName, 'i') }
+      : {};
+
+    return this.productModel.find(query).skip(skip).limit(take).exec();
   }
 
   async findOne(id: string): Promise<Product> {

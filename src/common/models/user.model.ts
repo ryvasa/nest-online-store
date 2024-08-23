@@ -39,3 +39,9 @@ export class UserMessageResponse {
   @ApiProperty({ type: UserMessage })
   data: UserMessage;
 }
+
+export class UserQuery {
+  name: string;
+  take: number;
+  skip: number;
+}

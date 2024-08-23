@@ -8,6 +8,7 @@ import {
 import { Request, Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 import { Error as MongooseErrorClass } from 'mongoose';
+import { JsonWebTokenError } from '@nestjs/jwt';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -29,7 +30,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else {
         message = (exceptionResponse as any).message;
       }
-    } else if (exception instanceof QueryFailedError) {
+    } else if (
+      exception instanceof QueryFailedError ||
+      exception instanceof JsonWebTokenError
+    ) {
       status = HttpStatus.BAD_REQUEST;
       message = (exception as any).message;
     } else if (exception instanceof MongooseErrorClass) {

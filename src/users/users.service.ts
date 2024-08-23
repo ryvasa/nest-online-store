@@ -9,6 +9,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { UserQuery } from '../common/models/user.model';
 
 @Injectable()
 export class UsersService {
@@ -25,8 +26,18 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async findAll(): Promise<User[]> {
-    const users = await this.userRepository.find({});
+  async findAll({ name, take, skip }: UserQuery): Promise<User[]> {
+    const query = this.userRepository.createQueryBuilder('user');
+
+    if (name) {
+      query.where('user.name LIKE :name OR user.username LIKE :name', {
+        name: `%${name}%`,
+      });
+    }
+
+    query.skip(skip).take(take);
+
+    const users = await query.getMany();
     return users;
   }
 

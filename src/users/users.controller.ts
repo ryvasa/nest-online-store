@@ -9,6 +9,8 @@ import {
   UseInterceptors,
   Req,
   UseGuards,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,6 +19,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -51,13 +54,24 @@ export class UsersController {
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all users' })
+  @ApiQuery({ name: 'name', required: false, type: String })
+  @ApiQuery({ name: 'take', required: false, type: String })
+  @ApiQuery({ name: 'skip', required: false, type: String })
   @ApiResponse({
     status: 200,
     description: 'Return all users.',
     type: ArrayUserResponse,
   })
-  findAll() {
-    return this.usersService.findAll();
+  findAll(
+    @Query('name') name?: string,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+  ) {
+    return this.usersService.findAll({
+      name,
+      take: take || 30,
+      skip: skip || 0,
+    });
   }
 
   @Get(':id')
