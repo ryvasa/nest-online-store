@@ -30,12 +30,12 @@ export class ArrayUserResponse {
   data: UserData[];
 }
 
-export class MessageData {
+export class UserMessage {
   @ApiProperty({ type: String, example: 'User has been deleted' })
   message: string;
 }
 
-export class MessageResponse {
-  @ApiProperty({ type: MessageData })
-  data: MessageData;
+export class UserMessageResponse {
+  @ApiProperty({ type: UserMessage })
+  data: UserMessage;
 }

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { QueryFailedError } from 'typeorm';
+import { Error as MongooseErrorClass } from 'mongoose';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -31,6 +32,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else if (exception instanceof QueryFailedError) {
       status = HttpStatus.BAD_REQUEST;
       message = (exception as any).message;
+    } else if (exception instanceof MongooseErrorClass) {
+      status = HttpStatus.BAD_REQUEST;
+      if (exception.name === 'ValidationError') {
+        message =
+          'Validation error: ' +
+          Object.values((exception as any).errors)
+            .map((err: any) => err.message)
+            .join(', ');
+      } else if (exception.name === 'CastError') {
+        const value = (exception as any).value;
+        const path = (exception as any).path;
+
+        message = `Invalid value '${value}' for field '${path}'. Please provide a valid value.`;
+      } else {
+        message = exception.message;
+      }
     }
 
     response.status(status).json({

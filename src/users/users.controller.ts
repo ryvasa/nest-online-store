@@ -21,12 +21,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UserInterceptor } from '../common/interceptors/user.interceptor';
-import {
-  MessageResponse,
-  RequestWithCredential,
-} from '../common/models/auth.model';
+import { RequestWithCredential } from '../common/models/auth.model';
 import { JWTAuthGuard } from '../common/guards/jwt-auth.guard';
-import { ArrayUserResponse, UserResponse } from '../common/models/user.model';
+import {
+  ArrayUserResponse,
+  UserMessageResponse,
+  UserResponse,
+} from '../common/models/user.model';
 
 @UseInterceptors(UserInterceptor)
 @ApiTags('users')
@@ -95,7 +96,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Delete user' })
   @ApiResponse({
     status: 200,
-    type: MessageResponse,
+    type: UserMessageResponse,
     description: 'The user has been successfully deleted.',
   })
   remove(

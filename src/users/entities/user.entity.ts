@@ -8,6 +8,12 @@ import {
 } from 'typeorm';
 import { Auth } from '../../auth/entities/auth.entity';
 
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user',
+  MODERATOR = 'moderator',
+}
+
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -24,6 +30,9 @@ export class User {
 
   @Column({ unique: true, length: 200 })
   email: string;
+
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
   @CreateDateColumn()
   createdDate: Date;
