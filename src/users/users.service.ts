@@ -26,10 +26,7 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    const users = await this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.auth', 'auth')
-      .getMany();
+    const users = await this.userRepository.find({});
     return users;
   }
 
@@ -62,10 +59,10 @@ export class UsersService {
   }
 
   async remove(auth: User, id: string): Promise<object> {
-    // const validUser = await this.validUser(auth, id);
-    // if (!validUser) {
-    //   throw new UnauthorizedException('You can not delete this user!');
-    // }
+    const validUser = await this.validUser(auth, id);
+    if (!validUser) {
+      throw new UnauthorizedException('You can not delete this user!');
+    }
     const user = await this.findOne(id);
     if (!user) {
       throw new Error(`User with ID ${id} not found`);

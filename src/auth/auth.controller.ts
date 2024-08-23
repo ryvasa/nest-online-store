@@ -9,16 +9,25 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { LocalAuthGuard } from 'src/common/guards/local-auth.guard';
 import { JWTAuthGuard } from '../common/guards/jwt-auth.guard';
 import {
+  LoginResponse,
+  MessageResponse,
+  RefreshResponse,
   RequestWithCredential,
   RequestWithGoogleCredential,
-} from '../common/interfaces/auth.interface';
+} from '../common/models/auth.model';
 import { GoogleAuthGuard } from '../common/guards/google-auth.guard';
 import { UserInterceptor } from '../common/interceptors/user.interceptor';
+import { User } from '../users/entities/user.entity';
 @ApiTags('auth')
 @UseInterceptors(UserInterceptor)
 @Controller('auth')
@@ -28,19 +37,19 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @ApiOperation({ summary: 'Login user.' })
-  @ApiResponse({ status: 200, description: 'Login User.' })
+  @ApiResponse({ status: 200, description: 'Login User.', type: LoginResponse })
   login(@Body() loginAuthDto: LoginAuthDto, @Req() req: RequestWithCredential) {
     return this.authService.login(req.user);
   }
 
   @UseGuards(JWTAuthGuard)
   @Get('refresh')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Refresh Token.' })
-  @ApiResponse({ status: 200, description: 'Refresh Token.' })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true,
+  @ApiResponse({
+    status: 200,
+    description: 'Refresh Token.',
+    type: RefreshResponse,
   })
   refereshToken(@Req() req: RequestWithCredential) {
     return this.authService.refreshToken(req.user);
@@ -48,8 +57,12 @@ export class AuthController {
 
   @UseGuards(JWTAuthGuard)
   @Get('me')
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  @ApiResponse({ status: 200, description: 'Current User.' })
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Current User.',
+    type: LoginResponse,
+  })
   @ApiOperation({ summary: 'Get Current User' })
   async me(@Req() request: RequestWithCredential) {
     return this.authService.me(request.user.id);
@@ -57,7 +70,12 @@ export class AuthController {
 
   @UseGuards(JWTAuthGuard)
   @Delete('logout')
-  @ApiResponse({ status: 200, description: 'Logout success.' })
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Logout success.',
+    type: MessageResponse,
+  })
   @ApiOperation({ summary: 'User Logout' })
   async logout(@Req() request: RequestWithCredential): Promise<object> {
     return this.authService.logout(request.user.id);
@@ -66,7 +84,7 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   @Get('login/google')
   @ApiResponse({ status: 200, description: 'Login with google success.' })
-  async google(@Req() request: RequestWithCredential): Promise<any> {
+  async google(@Req() request: RequestWithCredential): Promise<User> {
     return request.user;
   }
 

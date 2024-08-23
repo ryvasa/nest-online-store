@@ -8,13 +8,25 @@ import {
   Delete,
   UseInterceptors,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UserInterceptor } from '../common/interceptors/user.interceptor';
-import { RequestWithCredential } from '../common/interfaces/auth.interface';
+import {
+  MessageResponse,
+  RequestWithCredential,
+} from '../common/models/auth.model';
+import { JWTAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ArrayUserResponse, UserResponse } from '../common/models/user.model';
 
 @UseInterceptors(UserInterceptor)
 @ApiTags('users')
@@ -23,6 +35,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create user' })
   @ApiResponse({
     status: 201,
@@ -34,20 +47,34 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(JWTAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'Return all users.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all users.',
+    type: ArrayUserResponse,
+  })
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
+  @UseGuards(JWTAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get a user' })
-  @ApiResponse({ status: 200, description: 'Return a user.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return a user.',
+    type: UserResponse,
+  })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
+  @UseGuards(JWTAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update user' })
   @ApiResponse({
     status: 200,
@@ -63,12 +90,18 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseGuards(JWTAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete user' })
   @ApiResponse({
     status: 200,
+    type: MessageResponse,
     description: 'The user has been successfully deleted.',
   })
-  remove(@Param('id') id: string, @Req() request: RequestWithCredential) {
+  remove(
+    @Param('id') id: string,
+    @Req() request: RequestWithCredential,
+  ): Promise<object> {
     return this.usersService.remove(request.user, id);
   }
 }

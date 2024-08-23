@@ -10,10 +10,24 @@ async function bootstrap() {
     .setTitle('Online Store API')
     .setDescription('The Online Store API description')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Input your JWT token',
+        name: 'Authorization',
+        in: 'header',
+      },
+      'bearer',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      security: [{ bearer: [] }],
+    },
+  });
 
   // app.enableCors({
   //   origin: process.env.CONSUME_URL,

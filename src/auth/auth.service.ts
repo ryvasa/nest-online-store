@@ -13,8 +13,10 @@ import { Auth } from './entities/auth.entity';
 import { DataSource, Repository } from 'typeorm';
 import {
   GoogleAuthRequest,
-  LoginResponse,
-} from 'src/common/interfaces/auth.interface';
+  LoginData,
+  MessageData,
+  RefreshData,
+} from 'src/common/models/auth.model';
 
 @Injectable()
 export class AuthService {
@@ -57,7 +59,7 @@ export class AuthService {
     return accessToken;
   }
 
-  async login(auth: User): Promise<LoginResponse> {
+  async login(auth: User): Promise<LoginData> {
     const accessToken = await this.generateAccessToken(auth.id, auth.username);
     const refreshToken = await this.jwtService.signAsync(
       {
@@ -73,7 +75,7 @@ export class AuthService {
     return { ...updatedUser, accessToken };
   }
 
-  async googleAuth(auth: GoogleAuthRequest): Promise<LoginResponse | object> {
+  async googleAuth(auth: GoogleAuthRequest): Promise<LoginData | object> {
     // Start transaction
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -117,7 +119,7 @@ export class AuthService {
     }
   }
 
-  async refreshToken(auth: User): Promise<object> {
+  async refreshToken(auth: User): Promise<RefreshData> {
     const currentUser = await this.me(auth.id);
     const payload = await this.jwtService.verifyAsync(
       currentUser.refreshToken,
@@ -143,7 +145,7 @@ export class AuthService {
     return auth;
   }
 
-  async logout(id: string): Promise<object> {
+  async logout(id: string): Promise<MessageData> {
     const user = await this.me(id);
     await this.userRepository.save({
       ...user,
