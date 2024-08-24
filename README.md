@@ -32,6 +32,28 @@
 $ yarn install
 ```
 
+## Setup the database
+
+```bash
+$ docker-compose -f docker-compose.yml up -d // To create database and containers
+$ docker container exec -it mongo1 mongosh  // To enter the mongo1 container
+```
+
+## Initiate Replica Set
+
+```bash
+rs.initiate(
+  {
+    _id : 'my-mongo-set',
+    members: [
+      { _id : 0, host : "mongo1:27017" },
+      { _id : 1, host : "mongo2:27017" },
+      { _id : 2, host : "mongo3:27017" }
+    ]
+  }
+)
+```
+
 ## Running the app
 
 ```bash
