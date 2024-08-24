@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { Product } from '../../products/interfaces/product.interface';
+import { Stock } from '../../stocks/interfaces/stock.interface';
 
 export class CreateCartDto {
   @ApiProperty({
@@ -9,7 +11,7 @@ export class CreateCartDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly product: string;
+  readonly product: Product;
 
   @ApiProperty({
     example: '100sklal1234',
@@ -18,7 +20,7 @@ export class CreateCartDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly stock: string;
+  readonly stock: Stock;
 
   @ApiProperty({
     example: '100sklal1234',

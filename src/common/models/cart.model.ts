@@ -4,6 +4,9 @@ import { StockData } from './stock.model';
 
 export class DataItem {
   @ApiProperty({ type: String, example: '123-abc-456-def' })
+  _id: string;
+
+  @ApiProperty({ type: String, example: '123-abc-456-def' })
   product: string;
 
   @ApiProperty({ type: String, example: '123-abc-456-def' })
@@ -14,6 +17,9 @@ export class DataItem {
 
   @ApiProperty({ type: Number, example: 10 })
   price: number;
+
+  @ApiProperty({ type: Number, example: 0 })
+  __v: number;
 }
 export class CartData {
   @ApiProperty({ type: String, example: '123-abc-456-def' })
@@ -24,6 +30,9 @@ export class CartData {
 
   @ApiProperty({ type: [DataItem] })
   items: DataItem[];
+
+  @ApiProperty({ type: Number, example: 0 })
+  __v: number;
 }
 
 export class CartResponse {
@@ -31,6 +40,9 @@ export class CartResponse {
   data: CartData;
 }
 export class DataAggregateItem {
+  @ApiProperty({ type: String, example: '123-abc-456-def' })
+  _id: string;
+
   @ApiProperty({ type: ProductData })
   product: ProductData;
 
@@ -42,6 +54,9 @@ export class DataAggregateItem {
 
   @ApiProperty({ type: Number, example: 10 })
   price: number;
+
+  @ApiProperty({ type: Number, example: 0 })
+  __v: number;
 }
 
 export class CartAggregateData {
@@ -53,6 +68,9 @@ export class CartAggregateData {
 
   @ApiProperty({ type: [DataAggregateItem] })
   items: DataAggregateItem[];
+
+  @ApiProperty({ type: Number, example: 0 })
+  __v: number;
 }
 
 export class CartAggregateResponse {

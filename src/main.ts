@@ -36,7 +36,7 @@ async function bootstrap() {
   //   credentials: true,
   // });
 
-  // app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new GlobalInterceptor());
   app.useGlobalPipes(new ValidationPipe());
 

@@ -2,7 +2,7 @@ import { Document } from 'mongoose';
 import { Product } from '../../products/schema/product.schema';
 export interface Stock extends Document {
   readonly product: Product;
-  readonly stock: number;
+  stock: number;
   readonly color: string;
   readonly size: string;
   readonly image: string;

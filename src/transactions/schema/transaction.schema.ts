@@ -47,5 +47,8 @@ export class Transactions {
 
   @Prop({ required: true, default: Status.PROCESS, enum: Status })
   status: Status;
+
+  @Prop({ required: true })
+  totalPrice: number;
 }
 export const TransactionSchema = SchemaFactory.createForClass(Transactions);

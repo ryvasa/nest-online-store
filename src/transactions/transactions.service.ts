@@ -1,12 +1,20 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import {
+  UpdateStatusTransactionDto,
+  UpdateTransactionDto,
+} from './dto/update-transaction.dto';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Transaction } from './interfaces/transaction.interface';
 import { Stock } from '../stocks/interfaces/stock.interface';
 import { Cart } from '../cart/interfaces/cart.interface';
 import * as mongoose from 'mongoose';
+import { Product } from '../products/interfaces/product.interface';
 
 @Injectable()
 export class TransactionsService {
@@ -15,35 +23,121 @@ export class TransactionsService {
     @InjectModel('Transaction')
     private readonly transactionModel: Model<Transaction>,
     @InjectModel('Cart') private readonly cartModel: Model<Cart>,
+    @InjectModel('Product') private readonly productModel: Model<Product>,
     @InjectModel('Stock') private readonly stockModel: Model<Stock>,
-    @InjectModel('Product') private readonly productModel: Model<Stock>,
   ) {}
 
   async create(
     userId: string,
     createTransactionDto: CreateTransactionDto,
-  ): Promise<any> {
+  ): Promise<Transaction> {
     const session = await this.connection.startSession();
     session.startTransaction();
     try {
-      const transaction = await this.transactionModel.create({
+      let totalPrice = 0;
+      const updatedItems = [];
+
+      // Loop melalui setiap item dalam DTO untuk menghitung total harga dan menambahkan harga per item
+      for (const item of createTransactionDto.items) {
+        const product = await this.productModel
+          .findById(item.product)
+          .session(session);
+
+        if (!product) {
+          throw new NotFoundException('Product not found');
+        }
+
+        // Hitung harga untuk item tersebut
+        const itemPrice = product.price * item.quantity;
+
+        // Tambahkan harga item ke totalPrice
+        totalPrice += itemPrice;
+
+        // Buat item yang diperbarui dengan harga
+        updatedItems.push({
+          ...item,
+          price: itemPrice, // Menambahkan price ke setiap item
+        });
+      }
+
+      createTransactionDto.items = updatedItems;
+
+      // Buat transaksi baru dengan updatedItems dan totalPrice
+      const transaction = new this.transactionModel({
         userId,
-        ...createTransactionDto,
+        ...createTransactionDto, // Menggunakan items yang telah diperbarui dengan price
+        totalPrice,
       });
       await transaction.save({ session });
-      session.commitTransaction();
+
+      for (const item of transaction.items) {
+        const stock = await this.stockModel
+          .findById(item.stock._id)
+          .session(session);
+
+        if (!stock) {
+          throw new NotFoundException('Stock not found');
+        }
+
+        if (stock.stock < item.quantity) {
+          throw new BadRequestException(
+            'Insufficient stock for product: ' + stock,
+          );
+        }
+
+        stock.stock -= item.quantity;
+        await stock.save({ session });
+      }
+      const cart = await this.cartModel.findOne({ userId }).session(session);
+      if (!cart) {
+        throw new NotFoundException('Cart not found');
+      }
+      for (const itemDto of createTransactionDto.items) {
+        const itemIndex = cart.items.findIndex(
+          (item) =>
+            item.product._id.toString() === itemDto.product.toString() &&
+            item.stock._id.toString() === itemDto.stock.toString(),
+        );
+
+        if (itemIndex !== -1) {
+          const item = cart.items[itemIndex];
+          item.quantity -= itemDto.quantity;
+
+          if (item.quantity <= 0) {
+            cart.items.splice(itemIndex, 1); // Hapus item dari cart
+          } else {
+            cart.items[itemIndex].quantity = item.quantity; // Perbarui quantity
+          }
+        }
+      }
+
+      await cart.save({ session });
+
+      await session.commitTransaction();
       return transaction;
     } catch (error) {
-      console.log('first');
-      session.abortTransaction();
+      await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
 
-  findAll() {
-    return this.transactionModel.aggregate([
+  async findAll(): Promise<Transaction[]> {
+    return this.transactionModel.find();
+  }
+
+  async findAllByUserId(userId: string): Promise<Transaction[]> {
+    return this.transactionModel.find({ userId });
+  }
+
+  async findOne(id: string): Promise<Transaction> {
+    const transaction = await this.transactionModel.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(id),
+        },
+      },
       {
         $unwind: '$items',
       },
@@ -86,17 +180,44 @@ export class TransactionsService {
         },
       },
     ]);
+
+    if (!transaction.length) {
+      throw new NotFoundException('Transaction not found');
+    }
+    return transaction[0];
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} transaction`;
+  async update(
+    id: string,
+    updateTransactionDto: UpdateTransactionDto,
+  ): Promise<Transaction> {
+    const transaction = await this.transactionModel.findOne({ _id: id });
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+    // Cek apakah waktu yang berlalu sejak transaksi dibuat lebih dari 10 menit
+    const now = new Date();
+    const tenMinutes = 10 * 60 * 1000; // 10 menit dalam milidetik
+    const timeElapsed = now.getTime() - transaction.createdDate.getTime();
+
+    if (timeElapsed > tenMinutes) {
+      throw new BadRequestException(
+        'Transaction data cannot be changed after 10 minutes',
+      );
+    }
+    await this.transactionModel.updateOne({ _id: id }, updateTransactionDto);
+    return this.transactionModel.findOne({ _id: id });
   }
 
-  update(id: number, updateTransactionDto: UpdateTransactionDto) {
-    return `This action updates a #${id} transaction`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} transaction`;
+  async updateStatus(
+    id: string,
+    updateStatusTransactionDto: UpdateStatusTransactionDto,
+  ): Promise<Transaction> {
+    await this.findOne(id);
+    await this.transactionModel.updateOne(
+      { _id: id },
+      updateStatusTransactionDto,
+    );
+    return this.transactionModel.findOne({ _id: id });
   }
 }

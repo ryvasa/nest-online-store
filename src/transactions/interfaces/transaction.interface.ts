@@ -15,4 +15,6 @@ export interface Transaction extends Document {
   ];
   readonly address: number;
   readonly status: Status;
+  readonly totalPrice: number;
+  readonly createdDate: Date;
 }

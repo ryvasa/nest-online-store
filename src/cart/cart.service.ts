@@ -22,8 +22,8 @@ export class CartService {
     }
     const item = cart.items.find(
       (item) =>
-        item.product._id.toString() === updateCartDto.product &&
-        item.stock._id.toString() === updateCartDto.stock,
+        item.product._id === updateCartDto.product &&
+        item.stock._id === updateCartDto.stock,
     );
     if (item) {
       item.quantity += updateCartDto.quantity;
@@ -115,8 +115,8 @@ export class CartService {
 
     const item = cart.items.find(
       (item) =>
-        item.product._id.toString() === updateCartDto.product &&
-        item.stock._id.toString() === updateCartDto.stock,
+        item.product._id === updateCartDto.product &&
+        item.stock._id === updateCartDto.stock,
     );
 
     if (item) {
