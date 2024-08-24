@@ -23,11 +23,13 @@ import {
 } from '@nestjs/swagger';
 import {
   ArrayProductResponse,
+  ProductMessage,
   ProductMessageResponse,
   ProductResponse,
 } from '../common/models/product.model';
 import { JWTAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/role.guard';
+import { Product } from './interfaces/product.interface';
 
 @ApiTags('products')
 @Controller('products')
@@ -45,7 +47,7 @@ export class ProductsController {
     type: ProductResponse,
   })
   @ApiBody({ type: CreateProductDto })
-  create(@Body() createProductDto: CreateProductDto) {
+  create(@Body() createProductDto: CreateProductDto): Promise<Product> {
     return this.productsService.create(createProductDto);
   }
 
@@ -64,7 +66,7 @@ export class ProductsController {
     @Query('productName') productName?: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
-  ) {
+  ): Promise<Product[]> {
     return this.productsService.findAll({ productName, take, skip });
   }
 
@@ -75,7 +77,7 @@ export class ProductsController {
     description: 'Return a product.',
     type: ProductResponse,
   })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<Product> {
     return this.productsService.findOne(id);
   }
 
@@ -90,7 +92,10 @@ export class ProductsController {
     type: ProductResponse,
   })
   @ApiBody({ type: UpdateProductDto })
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
     return this.productsService.update(id, updateProductDto);
   }
 
@@ -104,7 +109,7 @@ export class ProductsController {
     description: 'The product has been successfully deleted.',
     type: ProductMessageResponse,
   })
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Promise<ProductMessage> {
     return this.productsService.remove(id);
   }
 }

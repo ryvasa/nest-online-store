@@ -9,7 +9,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { UserQuery } from '../common/models/user.model';
+import { UserMessage, UserQuery } from '../common/models/user.model';
 
 @Injectable()
 export class UsersService {
@@ -69,7 +69,7 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async remove(auth: User, id: string): Promise<object> {
+  async remove(auth: User, id: string): Promise<UserMessage> {
     const validUser = await this.validUser(auth, id);
     if (!validUser) {
       throw new UnauthorizedException('You can not delete this user!');

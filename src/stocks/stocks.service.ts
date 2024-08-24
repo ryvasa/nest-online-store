@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ProductsService } from '../products/products.service';
 import { Stock } from './interfaces/stock.interface';
+import { StockMessage } from '../common/models/stock.model';
 
 @Injectable()
 export class StocksService {
@@ -49,7 +50,7 @@ export class StocksService {
     return stock.save();
   }
 
-  async remove(productId: string, stockId: string): Promise<object> {
+  async remove(productId: string, stockId: string): Promise<StockMessage> {
     await this.productService.findOne(productId);
     const stock = await this.findOne(productId, stockId);
     stock.deleteOne();

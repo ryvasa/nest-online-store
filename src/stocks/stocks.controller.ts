@@ -24,7 +24,9 @@ import {
   ArrayStockResponse,
   StockResponse,
   StockMessageResponse,
+  StockMessage,
 } from '../common/models/stock.model';
+import { Stock } from './interfaces/stock.interface';
 
 @ApiTags('stocks')
 @Controller('stocks')
@@ -42,7 +44,7 @@ export class StocksController {
     type: StockResponse,
   })
   @ApiBody({ type: CreateStockDto })
-  create(@Body() createStockDto: CreateStockDto) {
+  create(@Body() createStockDto: CreateStockDto): Promise<Stock> {
     return this.stocksService.create(createStockDto);
   }
 
@@ -53,7 +55,7 @@ export class StocksController {
     description: 'Return all stock.',
     type: ArrayStockResponse,
   })
-  findAll() {
+  findAll(): Promise<Stock[]> {
     return this.stocksService.findAll();
   }
 
@@ -64,7 +66,7 @@ export class StocksController {
     description: 'Return all stock by product.',
     type: ArrayStockResponse,
   })
-  findAllByProductId(@Param('productId') productId: string) {
+  findAllByProductId(@Param('productId') productId: string): Promise<Stock[]> {
     return this.stocksService.findAllByProductId(productId);
   }
 
@@ -78,7 +80,7 @@ export class StocksController {
   findOne(
     @Param('productId') productId: string,
     @Param('stockId') stockId: string,
-  ) {
+  ): Promise<Stock> {
     return this.stocksService.findOne(productId, stockId);
   }
 
@@ -93,7 +95,7 @@ export class StocksController {
     @Param('productId') productId: string,
     @Param('stockId') stockId: string,
     @Body() updateStockDto: UpdateStockDto,
-  ) {
+  ): Promise<Stock> {
     return this.stocksService.update(productId, stockId, updateStockDto);
   }
 
@@ -106,7 +108,7 @@ export class StocksController {
   remove(
     @Param('productId') productId: string,
     @Param('stockId') stockId: string,
-  ) {
+  ): Promise<StockMessage> {
     return this.stocksService.remove(productId, stockId);
   }
 }

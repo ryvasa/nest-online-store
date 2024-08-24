@@ -1,14 +1,14 @@
 import { Document } from 'mongoose';
-import { Product } from '../../products/schema/product.schema';
-import { Stock } from '../../stocks/schema/stock.schema';
+import { Product } from '../../products/interfaces/product.interface';
+import { Stock } from '../../stocks/interfaces/stock.interface';
 export interface Cart extends Document {
   readonly _id: string;
   readonly userId: string;
   readonly items: [
     {
-      readonly product: Product;
-      readonly stock: Stock;
-      readonly quantity: number;
+      product: Product;
+      stock: Stock;
+      quantity: number;
       readonly price: number;
     },
   ];

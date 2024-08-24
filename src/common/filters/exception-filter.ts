@@ -32,7 +32,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     } else if (
       exception instanceof QueryFailedError ||
-      exception instanceof JsonWebTokenError
+      exception instanceof JsonWebTokenError ||
+      exception instanceof TypeError
     ) {
       status = HttpStatus.BAD_REQUEST;
       message = (exception as any).message;

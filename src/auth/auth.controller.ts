@@ -19,8 +19,11 @@ import { LoginAuthDto } from './dto/login-auth.dto';
 import { LocalAuthGuard } from 'src/common/guards/local-auth.guard';
 import { JWTAuthGuard } from '../common/guards/jwt-auth.guard';
 import {
+  LoginData,
   LoginResponse,
+  MessageData,
   MessageResponse,
+  RefreshData,
   RefreshResponse,
   RequestWithCredential,
   RequestWithGoogleCredential,
@@ -38,7 +41,10 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'Login user.' })
   @ApiResponse({ status: 200, description: 'Login User.', type: LoginResponse })
-  login(@Body() loginAuthDto: LoginAuthDto, @Req() req: RequestWithCredential) {
+  login(
+    @Body() loginAuthDto: LoginAuthDto,
+    @Req() req: RequestWithCredential,
+  ): Promise<LoginData> {
     return this.authService.login(req.user);
   }
 
@@ -51,7 +57,7 @@ export class AuthController {
     description: 'Refresh Token.',
     type: RefreshResponse,
   })
-  refereshToken(@Req() req: RequestWithCredential) {
+  refereshToken(@Req() req: RequestWithCredential): Promise<RefreshData> {
     return this.authService.refreshToken(req.user);
   }
 
@@ -64,7 +70,7 @@ export class AuthController {
     type: LoginResponse,
   })
   @ApiOperation({ summary: 'Get Current User' })
-  async me(@Req() request: RequestWithCredential) {
+  async me(@Req() request: RequestWithCredential): Promise<User> {
     return this.authService.me(request.user.id);
   }
 
@@ -77,7 +83,7 @@ export class AuthController {
     type: MessageResponse,
   })
   @ApiOperation({ summary: 'User Logout' })
-  async logout(@Req() request: RequestWithCredential): Promise<object> {
+  async logout(@Req() request: RequestWithCredential): Promise<MessageData> {
     return this.authService.logout(request.user.id);
   }
 
@@ -91,7 +97,9 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   @Get('google/redirect')
   @ApiResponse({ status: 200, description: 'Login with google success.' })
-  async coba(@Req() request: RequestWithGoogleCredential): Promise<any> {
+  async coba(
+    @Req() request: RequestWithGoogleCredential,
+  ): Promise<LoginData | object> {
     return this.authService.googleAuth(request.user);
   }
 }

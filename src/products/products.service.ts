@@ -3,7 +3,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ProductQuery } from '../common/models/product.model';
+import { ProductMessage, ProductQuery } from '../common/models/product.model';
 import { Product } from './interfaces/product.interface';
 
 @Injectable()
@@ -31,13 +31,16 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
     const product = await this.findOne(id);
     Object.assign(product, updateProductDto);
     return product.save();
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<ProductMessage> {
     const product = await this.findOne(id);
     product.deleteOne();
     return { message: 'Product has been deleted' };

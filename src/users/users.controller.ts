@@ -28,9 +28,11 @@ import { RequestWithCredential } from '../common/models/auth.model';
 import { JWTAuthGuard } from '../common/guards/jwt-auth.guard';
 import {
   ArrayUserResponse,
+  UserMessage,
   UserMessageResponse,
   UserResponse,
 } from '../common/models/user.model';
+import { User } from './entities/user.entity';
 
 @UseInterceptors(UserInterceptor)
 @ApiTags('users')
@@ -46,7 +48,7 @@ export class UsersController {
     description: 'The user has been successfully created.',
   })
   @ApiBody({ type: CreateUserDto })
-  create(@Body() createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }
 
@@ -66,7 +68,7 @@ export class UsersController {
     @Query('name') name?: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
-  ) {
+  ): Promise<User[]> {
     return this.usersService.findAll({
       name,
       take: take || 30,
@@ -83,7 +85,7 @@ export class UsersController {
     description: 'Return a user.',
     type: UserResponse,
   })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<User> {
     return this.usersService.findOne(id);
   }
 
@@ -100,7 +102,7 @@ export class UsersController {
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @Req() request: RequestWithCredential,
-  ) {
+  ): Promise<User> {
     return this.usersService.update(request.user, id, updateUserDto);
   }
 
@@ -116,7 +118,7 @@ export class UsersController {
   remove(
     @Param('id') id: string,
     @Req() request: RequestWithCredential,
-  ): Promise<object> {
+  ): Promise<UserMessage> {
     return this.usersService.remove(request.user, id);
   }
 }
