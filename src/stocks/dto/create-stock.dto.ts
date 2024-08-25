@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateStockDto {
@@ -14,7 +15,7 @@ export class CreateStockDto {
   @ApiProperty({
     example: 100,
     description: 'product stock',
-    type: Number,
+    type: String,
   })
   @IsInt()
   @IsNotEmpty()
@@ -30,13 +31,12 @@ export class CreateStockDto {
   readonly size: string;
 
   @ApiProperty({
-    example: 'stock.png',
-    description: 'stock image',
-    type: String,
+    type: 'string',
+    format: 'binary',
+    description: 'Stock image',
   })
-  @IsString()
-  @IsOptional()
-  readonly image: string;
+  @Type(() => Object)
+  image: string;
 
   @ApiProperty({
     example: 'Product color',

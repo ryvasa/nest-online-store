@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 export class CreateProductDto {
   @ApiProperty({
@@ -49,11 +50,10 @@ export class CreateProductDto {
   readonly material: string;
 
   @ApiProperty({
-    example: ['image1.png', 'image2.png'],
-    description: 'product image',
-    type: Array,
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+    description: 'Product images',
   })
-  @IsString({ each: true })
-  @IsNotEmpty()
-  readonly images: Array<string>;
+  @Type(() => Object)
+  images: string[];
 }

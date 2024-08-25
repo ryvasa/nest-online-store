@@ -17,6 +17,6 @@ export class Product {
   material: string;
 
   @Prop({ required: true })
-  images: Array<string>;
+  images: string[];
 }
 export const ProductSchema = SchemaFactory.createForClass(Product);

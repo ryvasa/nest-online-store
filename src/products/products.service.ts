@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -11,6 +15,9 @@ export class ProductsService {
   constructor(@InjectModel('Products') private productModel: Model<Product>) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
+    if (!createProductDto.images || createProductDto.images.length === 0) {
+      throw new BadRequestException('At least one image must be uploaded');
+    }
     const product = new this.productModel(createProductDto);
     return product.save();
   }

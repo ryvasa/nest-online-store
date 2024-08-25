@@ -8,11 +8,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { StocksModule } from './stocks/stocks.module';
 import { CartModule } from './cart/cart.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'images'),
+      serveRoot: '/images',
     }),
     MongooseModule.forRoot(process.env.MONGO_URI, {
       dbName: 'nest_online_store',

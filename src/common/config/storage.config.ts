@@ -25,9 +25,9 @@ export const avatarsStorage = {
   },
 };
 
-export const photosStorage = {
+export const imagesStorage = {
   storage: diskStorage({
-    destination: './images/photos',
+    destination: './images/images',
     filename: (req, file, cb) => {
       const uniqueSuffix = uuid();
       const ext = extname(file.originalname);

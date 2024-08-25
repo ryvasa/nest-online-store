@@ -39,12 +39,11 @@ export class StocksService {
   }
 
   async update(
-    productId: string,
-    stockId: string,
     updateStockDto: UpdateStockDto,
+    stockId: string,
   ): Promise<Stock> {
-    await this.productService.findOne(productId);
-    const stock = await this.findOne(productId, stockId);
+    await this.productService.findOne(updateStockDto.product);
+    const stock = await this.findOne(updateStockDto.product, stockId);
 
     Object.assign(stock, updateStockDto);
     return stock.save();

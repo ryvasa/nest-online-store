@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { StocksService } from './stocks.service';
 import { CreateStockDto } from './dto/create-stock.dto';
@@ -16,6 +18,7 @@ import { RolesGuard } from '../common/guards/role.guard';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -27,6 +30,8 @@ import {
   StockMessage,
 } from '../common/models/stock.model';
 import { Stock } from './interfaces/stock.interface';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { imagesStorage } from '../common/config/storage.config';
 
 @ApiTags('stocks')
 @Controller('stocks')
@@ -43,8 +48,15 @@ export class StocksController {
     description: 'The stock has been successfully created.',
     type: StockResponse,
   })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('images', imagesStorage))
   @ApiBody({ type: CreateStockDto })
-  create(@Body() createStockDto: CreateStockDto): Promise<Stock> {
+  create(
+    @UploadedFile()
+    file: Express.Multer.File,
+    @Body() createStockDto: CreateStockDto,
+  ): Promise<Stock> {
+    createStockDto.image = file.path;
     return this.stocksService.create(createStockDto);
   }
 
@@ -84,22 +96,31 @@ export class StocksController {
     return this.stocksService.findOne(productId, stockId);
   }
 
-  @Patch(':productId/:stockId')
+  @Patch(':id')
+  @UseGuards(JWTAuthGuard)
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Get a stock' })
   @ApiResponse({
     status: 200,
     description: 'Return a stock.',
     type: StockResponse,
   })
+  @ApiBody({ type: UpdateStockDto })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('image', imagesStorage))
   update(
-    @Param('productId') productId: string,
-    @Param('stockId') stockId: string,
+    @UploadedFile()
+    file: Express.Multer.File,
+    @Param('id') id: string,
     @Body() updateStockDto: UpdateStockDto,
   ): Promise<Stock> {
-    return this.stocksService.update(productId, stockId, updateStockDto);
+    updateStockDto.image = file.path;
+    return this.stocksService.update(updateStockDto, id);
   }
 
   @Delete(':productId/:stockId')
+  @UseGuards(JWTAuthGuard)
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a stock' })
   @ApiResponse({
     status: 200,

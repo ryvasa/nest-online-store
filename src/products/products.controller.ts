@@ -9,6 +9,8 @@ import {
   UseGuards,
   Query,
   ParseIntPipe,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -16,6 +18,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -30,6 +33,8 @@ import {
 import { JWTAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/role.guard';
 import { Product } from './interfaces/product.interface';
+import { imagesStorage } from '../common/config/storage.config';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('products')
 @Controller('products')
@@ -46,8 +51,16 @@ export class ProductsController {
     description: 'The product has been successfully created.',
     type: ProductResponse,
   })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('images', 4, imagesStorage))
   @ApiBody({ type: CreateProductDto })
-  create(@Body() createProductDto: CreateProductDto): Promise<Product> {
+  create(
+    @UploadedFiles()
+    files: Express.Multer.File[],
+    @Body() createProductDto: CreateProductDto,
+  ): Promise<Product> {
+    const images = files.map((file) => file.path);
+    createProductDto.images = images;
     return this.productsService.create(createProductDto);
   }
 
@@ -92,10 +105,17 @@ export class ProductsController {
     type: ProductResponse,
   })
   @ApiBody({ type: UpdateProductDto })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('images', 4, imagesStorage))
   update(
+    @UploadedFiles()
+    files: Express.Multer.File[],
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
   ): Promise<Product> {
+    const images = files.map((file) => file.path);
+    updateProductDto.images = images;
+    // updateProductDto.images = [...updateProductDto.images, ...files];
     return this.productsService.update(id, updateProductDto);
   }
 
