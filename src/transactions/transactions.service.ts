@@ -15,10 +15,18 @@ import { Stock } from '../stocks/interfaces/stock.interface';
 import { Cart } from '../cart/interfaces/cart.interface';
 import * as mongoose from 'mongoose';
 import { Product } from '../products/interfaces/product.interface';
+import { MidtransService } from '../payments/midtrans.service';
+import {
+  ChargePaymentDto,
+  // TransactionDetails,
+} from '../payments/dto/create-payment.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TransactionsService {
   constructor(
+    private readonly midtransService: MidtransService,
+    private readonly userService: UsersService,
     @InjectConnection() private readonly connection: mongoose.Connection,
     @InjectModel('Transaction')
     private readonly transactionModel: Model<Transaction>,
@@ -30,11 +38,12 @@ export class TransactionsService {
   async create(
     userId: string,
     createTransactionDto: CreateTransactionDto,
-  ): Promise<Transaction> {
+  ): Promise<Transaction | object> {
     const session = await this.connection.startSession();
     session.startTransaction();
     try {
       let totalPrice = 0;
+      const products = [];
       const updatedItems = [];
 
       // Loop melalui setiap item dalam DTO untuk menghitung total harga dan menambahkan harga per item
@@ -43,6 +52,13 @@ export class TransactionsService {
           .findById(item.product)
           .session(session);
 
+        const formatedProduct = {
+          id: product._id.toString(),
+          price: product.price,
+          quantity: item.quantity,
+          name: product.productName,
+        };
+        products.push(formatedProduct);
         if (!product) {
           throw new NotFoundException('Product not found');
         }
@@ -110,11 +126,43 @@ export class TransactionsService {
           }
         }
       }
+      const user = await this.userService.findOne(userId);
 
       await cart.save({ session });
 
+      const chargePaymentDto = new ChargePaymentDto();
+      chargePaymentDto.transaction_details;
+
+      chargePaymentDto.item_details = products;
+      chargePaymentDto.payment_type = createTransactionDto.payment_methode;
+
+      if (createTransactionDto.payment_methode === 'bank_transfer') {
+        chargePaymentDto.bank_transfer = {
+          bank: createTransactionDto.bank_transfer,
+        };
+      }
+
+      const customerDetails = {
+        email: user.email,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        phone: user.phone,
+        shipping_address: createTransactionDto.shipping_address,
+      };
+      const transactionDetails = {
+        order_id: transaction._id.toString(),
+        gross_amount: transaction.totalPrice,
+      };
+      chargePaymentDto.customer_details = customerDetails;
+
+      chargePaymentDto.transaction_details = transactionDetails;
+      const payment =
+        await this.midtransService.createChargeTransaction(chargePaymentDto);
+
       await session.commitTransaction();
-      return transaction;
+
+      return { payment };
+      // return transaction;
     } catch (error) {
       await session.abortTransaction();
       throw error;

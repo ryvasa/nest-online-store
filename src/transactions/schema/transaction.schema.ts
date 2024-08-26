@@ -42,8 +42,8 @@ export class Transactions {
     },
   ];
 
-  @Prop({ required: true })
-  address: string;
+  // @Prop({ required: true })
+  // address: string;
 
   @Prop({ required: true, default: Status.PROCESS, enum: Status })
   status: Status;

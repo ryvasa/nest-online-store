@@ -3,12 +3,20 @@ import { IsEmail, IsString } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({
-    example: 'John Doe',
+    example: 'Jhon',
     description: 'The name of the user',
     type: String,
   })
   @IsString()
-  name: string;
+  firstName: string;
+
+  @ApiProperty({
+    example: 'Doe',
+    description: 'The name of the user',
+    type: String,
+  })
+  @IsString()
+  lastName: string;
 
   @ApiProperty({
     example: 'johndoe',
@@ -25,6 +33,14 @@ export class CreateUserDto {
   })
   @IsEmail()
   email: string;
+
+  @ApiProperty({
+    example: '1234567890',
+    description: 'The phone number of the user',
+    type: String,
+  })
+  @IsString()
+  phone: string;
 
   @ApiProperty({
     example: 'password123',

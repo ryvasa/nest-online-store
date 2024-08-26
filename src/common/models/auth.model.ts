@@ -9,7 +9,13 @@ export class LoginData {
   username: string;
 
   @ApiProperty({ type: String, example: 'john' })
-  name: string;
+  firstName: string;
+
+  @ApiProperty({ type: String, example: 'doe' })
+  lastName: string;
+
+  @ApiProperty({ type: String, example: '0987654321' })
+  phone: string;
 
   @ApiProperty({ type: String, example: 'johndoe@example.com' })
   email: string;

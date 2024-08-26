@@ -94,7 +94,7 @@ export class AuthService {
       const createUser = this.userRepository.create({
         username: auth.username,
         email: auth.email,
-        name: auth.name,
+        firstName: auth.name,
       });
       await queryRunner.manager.save(createUser);
 

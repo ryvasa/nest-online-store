@@ -11,6 +11,8 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { PaymentsModule } from './payments/payments.module';
+import { RedicetModule } from './redicet/redicet.module';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
     StocksModule,
     CartModule,
     TransactionsModule,
+    PaymentsModule,
+    RedicetModule,
   ],
 })
 export class AppModule {}

@@ -20,7 +20,10 @@ export class User {
   id: string;
 
   @Column({ type: 'varchar', length: 200 })
-  name: string;
+  firstName: string;
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  lastName: string;
 
   @Column({ type: 'varchar', length: 200, unique: true })
   username: string;
@@ -30,6 +33,9 @@ export class User {
 
   @Column({ unique: true, length: 200 })
   email: string;
+
+  @Column({ unique: true, length: 30, nullable: true })
+  phone: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;

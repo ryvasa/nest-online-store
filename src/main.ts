@@ -30,11 +30,11 @@ async function bootstrap() {
     },
   });
 
-  // app.enableCors({
-  //   origin: process.env.CONSUME_URL,
-  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  //   credentials: true,
-  // });
+  app.enableCors({
+    origin: process.env.CONSUME_URL,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new GlobalInterceptor());

@@ -48,7 +48,7 @@ export class TransactionsController {
   async create(
     @Body() createTransactionDto: CreateTransactionDto,
     @Req() request: RequestWithCredential,
-  ): Promise<Transaction> {
+  ): Promise<Transaction | object> {
     return this.transactionsService.create(
       request.user.id,
       createTransactionDto,

@@ -9,6 +9,7 @@ import { Request, Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 import { Error as MongooseErrorClass } from 'mongoose';
 import { JsonWebTokenError } from '@nestjs/jwt';
+import { MidtransError } from 'midtrans-client';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -37,6 +38,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     ) {
       status = HttpStatus.BAD_REQUEST;
       message = (exception as any).message;
+    } else if (exception instanceof MidtransError) {
+      status = (exception as any).ApiResponse.status_code;
+      message = (exception as any).ApiResponse.validation_messages;
     } else if (exception instanceof MongooseErrorClass) {
       status = HttpStatus.BAD_REQUEST;
       if (exception.name === 'ValidationError') {

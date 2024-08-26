@@ -7,9 +7,11 @@ import { TransactionSchema } from './schema/transaction.schema';
 import { ProductSchema } from '../products/schema/product.schema';
 import { StockSchema } from '../stocks/schema/stock.schema';
 import { CartSchema } from '../cart/schema/cart.schema';
+import { PaymentsModule } from '../payments/payments.module';
 
 @Module({
   imports: [
+    PaymentsModule,
     UsersModule,
     MongooseModule.forFeature([
       { name: 'Transaction', schema: TransactionSchema },
@@ -20,5 +22,6 @@ import { CartSchema } from '../cart/schema/cart.schema';
   ],
   controllers: [TransactionsController],
   providers: [TransactionsService],
+  exports: [TransactionsService],
 })
 export class TransactionsModule {}

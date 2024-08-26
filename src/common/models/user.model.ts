@@ -8,7 +8,13 @@ export class UserData {
   username: string;
 
   @ApiProperty({ type: String, example: 'john' })
-  name: string;
+  firstName: string;
+
+  @ApiProperty({ type: String, example: 'doe' })
+  lastName: string;
+
+  @ApiProperty({ type: String, example: '1234567890' })
+  phone: string;
 
   @ApiProperty({ type: String, example: 'johndoe@example.com' })
   email: string;
