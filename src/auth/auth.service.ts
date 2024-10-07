@@ -82,8 +82,8 @@ export class AuthService {
     await queryRunner.startTransaction();
 
     try {
-      const findUserByProviderId = await this.authRepository
-        .createQueryBuilder('auth')
+      const findUserByProviderId = await queryRunner.manager
+        .createQueryBuilder()
         .leftJoinAndSelect('auth.user', 'user')
         .where('auth.providerId = :providerId', { providerId: auth.providerId })
         .getOne();
@@ -91,14 +91,14 @@ export class AuthService {
       if (findUserByProviderId) {
         return this.login(findUserByProviderId.user);
       }
-      const createUser = this.userRepository.create({
+      const createUser = queryRunner.manager.create(User, {
         username: auth.username,
         email: auth.email,
-        name: auth.name,
+        firstName: auth.firstName,
       });
       await queryRunner.manager.save(createUser);
 
-      const createAuth = this.authRepository.create({
+      const createAuth = queryRunner.manager.create(Auth, {
         providerId: auth.providerId,
         provider: auth.provider,
         user: createUser,

@@ -10,15 +10,15 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import * as otpGenerator from 'otp-generator';
 import { UserMessage, UserQuery } from '../common/models/user.model';
-import { MailerService } from '@nestjs-modules/mailer';
+// import * as otpGenerator from 'otp-generator';
+// import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
-    private readonly mailService: MailerService,
+    // private readonly mailService: MailerService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -88,7 +88,7 @@ export class UsersService {
     }
     const user = await this.findOne(id);
     if (!user) {
-      throw new Error(`User with ID ${id} not found`);
+      throw new NotFoundException(`User not found`);
     }
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
@@ -104,7 +104,7 @@ export class UsersService {
     }
     const user = await this.findOne(id);
     if (!user) {
-      throw new Error(`User with ID ${id} not found`);
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
     await this.userRepository.remove(user);
     return { message: 'User has been deleted' };
