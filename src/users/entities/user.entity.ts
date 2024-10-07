@@ -20,7 +20,13 @@ export class User {
   id: string;
 
   @Column({ type: 'varchar', length: 200 })
-  name: string;
+  firstName: string;
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  lastName: string;
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  phone: string;
 
   @Column({ type: 'varchar', length: 200, unique: true })
   username: string;

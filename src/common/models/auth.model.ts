@@ -9,7 +9,7 @@ export class LoginData {
   username: string;
 
   @ApiProperty({ type: String, example: 'john' })
-  name: string;
+  firstName: string;
 
   @ApiProperty({ type: String, example: 'johndoe@example.com' })
   email: string;
@@ -44,7 +44,9 @@ export class GoogleAuthRequest {
   provider: string;
   providerId: string;
   email: string;
-  name: string;
+  // name: string;
+  firstName: string;
+  lastName: string;
   username: string;
   picture: string;
 }
