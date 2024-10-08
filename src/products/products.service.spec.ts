@@ -102,18 +102,25 @@ describe('ProductsService', () => {
   describe('findAll', () => {
     it('should return an array of products with pagination and search', async () => {
       const mockProducts = [mockProduct];
-      jest.spyOn(model, 'find').mockReturnValue({
+      const findMock = jest.fn().mockReturnValue({
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValueOnce(mockProducts),
-      } as any);
+      });
+      jest.spyOn(model, 'find').mockImplementation(findMock);
 
       const result = await service.findAll({
         productName: 'Test Product',
         take: 10,
         skip: 0,
       });
+
       expect(result).toEqual(mockProducts);
+      expect(findMock).toHaveBeenCalledWith({
+        productName: expect.any(RegExp),
+      });
+      expect(findMock().skip).toHaveBeenCalledWith(0);
+      expect(findMock().limit).toHaveBeenCalledWith(10);
     });
     it('should return an array of products without pagination and search', async () => {
       const mockProducts = [mockProduct];
