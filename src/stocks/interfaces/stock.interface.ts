@@ -5,7 +5,7 @@ export interface Stock extends Document {
   stock: number;
   readonly color: string;
   readonly size: string;
-  readonly image: Express.Multer.File;
+  readonly image: string;
   readonly weight?: number;
   readonly length?: number;
   readonly width?: number;
