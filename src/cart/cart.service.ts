@@ -3,6 +3,7 @@ import { UpdateCartDto } from './dto/update-cart.dto';
 import { Cart } from './interfaces/cart.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { CartModule } from './cart.module';
 
 @Injectable()
 export class CartService {
@@ -25,6 +26,11 @@ export class CartService {
         item.product._id === updateCartDto.product &&
         item.stock._id === updateCartDto.stock,
     );
+    // console.log({
+    //   item,
+    //   items: cart.items[0].product._id,
+    //   dto: updateCartDto.product,
+    // });
     if (item) {
       item.quantity += updateCartDto.quantity;
       return cart.save();
@@ -32,60 +38,64 @@ export class CartService {
       const cart = await this.cartModel.findOneAndUpdate(
         { userId },
         { $push: { items: updateCartDto } },
+        { new: true, runValidators: true },
       );
-      cart.save();
-      return await this.cartModel.findOne({ userId });
+      return cart;
     }
   }
 
   async findAllByUser(userId: string): Promise<Cart | object> {
-    const cart = await this.cartModel.aggregate([
-      {
-        $match: { userId },
-      },
-      {
-        $unwind: '$items',
-      },
-      {
-        $lookup: {
-          from: 'products',
-          localField: 'items.product',
-          foreignField: '_id',
-          as: 'items.product',
+    const cart = await this.cartModel
+      .aggregate([
+        {
+          $match: { userId },
         },
-      },
-      {
-        $unwind: '$items.product',
-      },
-      {
-        $lookup: {
-          from: 'stocks',
-          localField: 'items.stock',
-          foreignField: '_id',
-          as: 'items.stock',
+        {
+          $unwind: '$items',
         },
-      },
-      {
-        $unwind: '$items.stock',
-      },
-      {
-        $group: {
-          _id: '$_id',
-          userId: { $first: '$userId' },
-          items: {
-            $push: {
-              product: '$items.product',
-              stock: '$items.stock',
-              quantity: '$items.quantity',
-              price: { $multiply: ['$items.product.price', '$items.quantity'] },
+        {
+          $lookup: {
+            from: 'products',
+            localField: 'items.product',
+            foreignField: '_id',
+            as: 'items.product',
+          },
+        },
+        {
+          $unwind: '$items.product',
+        },
+        {
+          $lookup: {
+            from: 'stocks',
+            localField: 'items.stock',
+            foreignField: '_id',
+            as: 'items.stock',
+          },
+        },
+        {
+          $unwind: '$items.stock',
+        },
+        {
+          $group: {
+            _id: '$_id',
+            userId: { $first: '$userId' },
+            items: {
+              $push: {
+                product: '$items.product',
+                stock: '$items.stock',
+                quantity: '$items.quantity',
+                price: {
+                  $multiply: ['$items.product.price', '$items.quantity'],
+                },
+              },
             },
           },
         },
-      },
-      {
-        $limit: 1,
-      },
-    ]);
+        {
+          $limit: 1,
+        },
+      ])
+      .exec();
     if (!cart.length) {
       return { message: `You don't have any products in your cart yet` };
     } else {

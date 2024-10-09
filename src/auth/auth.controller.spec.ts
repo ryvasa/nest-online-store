@@ -37,5 +37,8 @@ describe('AuthController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+    expect(authService).toBeDefined();
+    expect(jwtService).toBeDefined();
+    expect(userService).toBeDefined();
   });
 });

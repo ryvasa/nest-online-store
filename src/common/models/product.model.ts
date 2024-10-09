@@ -59,7 +59,7 @@ export class ProductMessageResponse {
 }
 
 export class ProductQuery {
-  productName: string;
-  take: number;
-  skip: number;
+  productName?: string;
+  take?: number;
+  skip?: number;
 }

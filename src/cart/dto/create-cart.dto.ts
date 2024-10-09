@@ -11,7 +11,7 @@ export class CreateCartDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly product: Product;
+  readonly product: string;
 
   @ApiProperty({
     example: '100sklal1234',
@@ -20,7 +20,7 @@ export class CreateCartDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly stock: Stock;
+  readonly stock: string;
 
   @ApiProperty({
     example: '100sklal1234',
