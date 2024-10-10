@@ -15,7 +15,9 @@ export class StocksService {
   ) {}
 
   async create(createStockDto: CreateStockDto): Promise<Stock> {
+    console.log(createStockDto);
     const stock = new this.stockModel(createStockDto);
+    console.log(stock);
     const res = await stock.save();
     return res;
   }

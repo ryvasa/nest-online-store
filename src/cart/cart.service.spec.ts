@@ -5,7 +5,6 @@ import { Model } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { Product } from 'src/products/interfaces/product.interface';
-import { Stock } from 'src/stocks/interfaces/stock.interface';
 import { UpdateCartDto } from './dto/update-cart.dto';
 
 describe('CartService', () => {

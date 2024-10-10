@@ -15,11 +15,11 @@ export class CreateStockDto {
   @ApiProperty({
     example: 100,
     description: 'product stock',
-    type: String,
+    type: Number,
   })
   @IsInt()
   @IsNotEmpty()
-  readonly stock: string;
+  readonly stock: number;
 
   @ApiProperty({
     example: 'Product size',

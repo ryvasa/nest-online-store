@@ -38,11 +38,12 @@ export class TransactionsService {
       const updatedItems = [];
 
       // Loop melalui setiap item dalam DTO untuk menghitung total harga dan menambahkan harga per item
+
       for (const item of createTransactionDto.items) {
         const product = await this.productModel
           .findById(item.product)
-          .session(session);
-
+          .session(session)
+          .exec();
         if (!product) {
           throw new NotFoundException('Product not found');
         }
@@ -72,8 +73,9 @@ export class TransactionsService {
 
       for (const item of transaction.items) {
         const stock = await this.stockModel
-          .findById(item.stock._id)
-          .session(session);
+          .findById(item.stock)
+          .session(session)
+          .exec();
 
         if (!stock) {
           throw new NotFoundException('Stock not found');
@@ -84,11 +86,13 @@ export class TransactionsService {
             'Insufficient stock for product: ' + stock,
           );
         }
-
         stock.stock -= item.quantity;
         await stock.save({ session });
       }
-      const cart = await this.cartModel.findOne({ userId }).session(session);
+      const cart = await this.cartModel
+        .findOne({ userId })
+        .session(session)
+        .exec();
       if (!cart) {
         throw new NotFoundException('Cart not found');
       }
@@ -98,7 +102,6 @@ export class TransactionsService {
             item.product._id.toString() === itemDto.product.toString() &&
             item.stock._id.toString() === itemDto.stock.toString(),
         );
-
         if (itemIndex !== -1) {
           const item = cart.items[itemIndex];
           item.quantity -= itemDto.quantity;
@@ -132,54 +135,58 @@ export class TransactionsService {
   }
 
   async findOne(id: string): Promise<Transaction> {
-    const transaction = await this.transactionModel.aggregate([
-      {
-        $match: {
-          _id: new mongoose.Types.ObjectId(id),
+    const transaction = await this.transactionModel
+      .aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(id),
+          },
         },
-      },
-      {
-        $unwind: '$items',
-      },
-      {
-        $lookup: {
-          from: 'products',
-          localField: 'items.product',
-          foreignField: '_id',
-          as: 'items.product',
+        {
+          $unwind: '$items',
         },
-      },
-      {
-        $unwind: '$items.product',
-      },
-      {
-        $lookup: {
-          from: 'stocks',
-          localField: 'items.stock',
-          foreignField: '_id',
-          as: 'items.stock',
+        {
+          $lookup: {
+            from: 'products',
+            localField: 'items.product',
+            foreignField: '_id',
+            as: 'items.product',
+          },
         },
-      },
-      {
-        $unwind: '$items.stock',
-      },
-      {
-        $group: {
-          _id: '$_id',
-          userId: { $first: '$userId' },
-          address: { $first: '$address' },
-          status: { $first: '$status' },
-          items: {
-            $push: {
-              product: '$items.product',
-              stock: '$items.stock',
-              quantity: '$items.quantity',
-              price: { $multiply: ['$items.product.price', '$items.quantity'] },
+        {
+          $unwind: '$items.product',
+        },
+        {
+          $lookup: {
+            from: 'stocks',
+            localField: 'items.stock',
+            foreignField: '_id',
+            as: 'items.stock',
+          },
+        },
+        {
+          $unwind: '$items.stock',
+        },
+        {
+          $group: {
+            _id: '$_id',
+            userId: { $first: '$userId' },
+            address: { $first: '$address' },
+            status: { $first: '$status' },
+            items: {
+              $push: {
+                product: '$items.product',
+                stock: '$items.stock',
+                quantity: '$items.quantity',
+                price: {
+                  $multiply: ['$items.product.price', '$items.quantity'],
+                },
+              },
             },
           },
         },
-      },
-    ]);
+      ])
+      .exec();
 
     if (!transaction.length) {
       throw new NotFoundException('Transaction not found');
